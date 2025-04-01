@@ -17,6 +17,8 @@
 #define PROM_NB                 8
 #define MS5611_OSR				CMD_ADC_4096
 
+#include <math.h>
+
 typedef struct {
     int32_t baroAlt;
     int32_t pressure;
@@ -28,12 +30,7 @@ typedef struct {
     uint8_t p_rxbuf[3];
 } MS5611_t;
 
-static void MS5611_Reset(void);
-static void MS5611_Read_Prom(void);
-static void MS5611_Start_T(void);
-static void MS5611_Start_P(void);
-static void MS5611_Read_Adc_T(void);
-static void MS5611_Read_Adc_P(void);
+
 static void MS5611_BaroAltCalculate(void);
 
 static MS5611_t ms5611;
