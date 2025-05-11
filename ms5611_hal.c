@@ -6,9 +6,17 @@
  * @param dat Data to write.
  * @return Data read from the device.
  */
-uint8_t IIC_SingleWirteAndRead(uint8_t deviceaddr, uint8_t dat)
+void IIC_SingleWirteAndRead(uint8_t deviceaddr, uint8_t reg, uint8_t dat)
 {
-    while (HAL_I2C_Master_Transmit(&hi2c1, deviceaddr, &dat, 1, 1000) != HAL_OK);
+    HAL_I2C_Mem_Write(
+        &hi2c2,            // I2C 句柄
+        deviceaddr << 1,      // 设备地址（左移 1 位，HAL 要求 7 位地址）
+        reg,           // 目标寄存器地址
+        I2C_MEMADD_SIZE_8BIT,  // 寄存器地址长度（8 位或 16 位）
+        &dat,             // 要写入的数据
+        1,                 // 数据长度（字节数）
+        100                // 超时时间（ms）
+    );
 }
 
 /**
@@ -18,9 +26,17 @@ uint8_t IIC_SingleWirteAndRead(uint8_t deviceaddr, uint8_t dat)
  * @param len Length of the data to read.
  * @return None
  */
-void IIC_MultiWriteAndRead(uint8_t deviceaddr, uint8_t *out, int len)
-{
-    while (HAL_I2C_Master_Receive(&hi2c1, deviceaddr, out, len, 1000) != HAL_OK); // Receive the data
+
+void IIC_MultiRead(uint8_t deviceaddr, uint8_t reg, uint8_t *out, uint8_t len) {
+    HAL_I2C_Mem_Read(
+        &hi2c2,
+        deviceaddr << 1,
+        reg,
+        I2C_MEMADD_SIZE_8BIT,
+        out,
+        len,
+        100
+    );
 }
 
 /**
@@ -31,8 +47,7 @@ void IIC_MultiWriteAndRead(uint8_t deviceaddr, uint8_t *out, int len)
  */
 void IIC_MS5611SingleWrite(uint8_t reg, uint8_t value)
 {
-    IIC_SingleWirteAndRead(MS5611_ADDR, reg);
-    IIC_SingleWirteAndRead(MS5611_ADDR, value);
+    IIC_SingleWirteAndRead(MS5611_ADDR, reg, value);
 }
 
 /**
@@ -44,7 +59,6 @@ void IIC_MS5611SingleWrite(uint8_t reg, uint8_t value)
  */
 void IIC_MS5611MultiRead(uint8_t reg, uint8_t *data, uint8_t length)
 {
-    IIC_SingleWirteAndRead(MS5611_ADDR, reg);
-    IIC_MultiWriteAndRead(MS5611_ADDR, data, length);
+    IIC_MultiRead(MS5611_ADDR, reg, data, length);
 }
 

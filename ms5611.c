@@ -1,18 +1,6 @@
 #include "ms5611.h"
 
-/**
- * @brief Initialize the MS5611 sensor registers.
- * @param None
- * @return None
- */
-void MS5611_Init(void)
-{
-    MS5611_Reset();
-    HAL_Delay(3);
-    MS5611_Read_Prom();
 
-    MS5611_Start_T();
-}
 
 /**
  * @brief Reset the MS5611 sensor.
@@ -33,11 +21,35 @@ static void MS5611_Read_Prom(void)
 {
     uint8_t rxbuf[2] = { 0, 0 };
 
-    for (u8 i = 0; i < PROM_NB; i++)
+    for (uint8_t i = 0; i < PROM_NB; i++)
     {
         IIC_MS5611MultiRead((CMD_PROM_RD + i * 2), rxbuf, 2);
         ms5611.prom[i] = rxbuf[0] << 8 | rxbuf[1];
     }
+}
+
+/**
+ * @brief Send temperature measurement command to MS5611.
+ * @param None
+ * @return None
+ */
+static void MS5611_Start_T(void)
+{
+    IIC_MS5611SingleWrite(CMD_ADC_CONV + CMD_ADC_D2 + MS5611_OSR, 0x01);
+}
+
+/**
+ * @brief Initialize the MS5611 sensor registers.
+ * @param None
+ * @return None
+ */
+void MS5611_Init(void)
+{
+    MS5611_Reset();
+    HAL_Delay(3);
+    MS5611_Read_Prom();
+
+    MS5611_Start_T();
 }
 
 /**
@@ -60,15 +72,7 @@ static void MS5611_Read_Adc_P(void)
     IIC_MS5611MultiRead(CMD_ADC_READ, ms5611.p_rxbuf, 3);
 }
 
-/**
- * @brief Send temperature measurement command to MS5611.
- * @param None
- * @return None
- */
-static void MS5611_Start_T(void)
-{
-    IIC_MS5611SingleWrite(CMD_ADC_CONV + CMD_ADC_D2 + MS5611_OSR, 0x01);
-}
+
 
 /**
  * @brief Send pressure measurement command to MS5611.
